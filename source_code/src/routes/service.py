@@ -1,10 +1,10 @@
 import os
 import math
 from app import redis#, db
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, render_template
 #from redis import Redis
 from models.emp import Departments, Jobs, Hired_employees, Log_action
-from utils.funtions import session, jwt, datetime, timedelta, json, database, download_file_from_google_drive, pd, validate_load_hired, validate_date, validate_int
+from utils.funtions import session, jwt, datetime, timedelta, json, database, download_file_from_google_drive, pd, validate_load_hired, validate_date, validate_int, timezone
 from os import getenv
 
 service = Blueprint("service", __name__)
@@ -22,17 +22,18 @@ def login():
     data = request.get_json()
     
     session['current_user'] = data['user']
+    #print("usuario->",session['current_user']) 
     
     token = jwt.encode(payload={**data, "exp":datetime.utcnow() + timedelta(seconds=30)}, key=getenv("SECRET"), algorithm="HS256")
     
-    if data['password'] == 1234:
+    if data['password'] == int(getenv("CLAVE")):
         return token.encode("UTF-8")        
     else:
         return json.dumps("user not found"), 404
 
-@service.route('/load_files')
+@service.route('/load_hired')
 #@token_required
-def load_files():
+def load_hired():
     #redis.incr('hits')
     #return 'This Compose/Flask demo has been viewed %s time(s).' % redis.get('hits')
     try:
@@ -45,13 +46,14 @@ def load_files():
 
         download_file_from_google_drive(file_id, full_path, 'hired_employees.csv')
 
-        return json.dumps("Csv cargados"), 405
+        return json.dumps("Csv cargados"), 200
     
     except NameError:
         print("NameError: error de carga.")
         return json.dumps("error carga"), 405
 
 @service.route('/add_deparments', methods=['POST'])
+#@token_required
 def add_deparments():
     data = request.get_json()
 
@@ -61,11 +63,18 @@ def add_deparments():
 
     return json.dumps("Added_departments"), 200
 
+@service.route('/quarter_report', methods=['GET'])
+#@token_required
+def quarter_report():
+    all_quarter = database.sp_quarter()    
+    print(all_quarter)
+    return render_template('quarter_report.html', quarters = all_quarter)
+
 @service.route('/all_deparments', methods=['GET'])
 #@token_required
 def all_deparments():
     departments = database.get_all(Departments)
-        
+    #print(departments)        
     all_dept = []
     for dept in departments:
         new_dept = {
@@ -156,9 +165,9 @@ def load_jobs():
 
     return json.dumps("Jobs cargados"), 200
 
-@service.route('/load_hired/<row_count>', methods=['GET'])
+@service.route('/add_hired/<row_count>', methods=['GET'])
 #@token_required
-def load_hired(row_count):
+def add_hired(row_count):
     
     #val_count = int(row_count)
     val_count = int(row_count) - 1
@@ -192,9 +201,9 @@ def load_hired(row_count):
                 hired_id=df_.iloc[i,0]                
                 name_=df_.iloc[i,1]                
                 datetime_=df_.iloc[i,2]
-                dept_id_=df_.iloc[i,3]
+                dept_id_=int(df_.iloc[i,3])
                 job_id_=df_.iloc[i,4]
-                #print("index->",i)
+                print("index->",i)
 
                 ######################################## validaciones hired ####################################                
                 if not validate_date(datetime_):
@@ -205,6 +214,7 @@ def load_hired(row_count):
                     str_validator = str_validator + "nombre no invalido,"                     
                     count_validator += 1
                 #if not isinstance(dept_id_, int):
+                #print(dept_id_) 
                 if not validate_int(dept_id_) or math.isnan(dept_id_):                
                     str_validator = str_validator + "deparmentid invalido," 
                     print(dept_id_)                     
@@ -220,11 +230,15 @@ def load_hired(row_count):
                     if  count_validator == 0:  
                         
                         name_v = str(name_)[1:-1] 
-
-                        database.add_instance(Hired_employees,name=str(name_v), datetime=str(datetime_), department_id=int(dept_id_), job_id=int(job_id_), id_hired=int(hired_id))    
+                        datetime_v = datetime.fromisoformat(datetime_[:-1]).astimezone(timezone.utc)
+                        datetime_v1 = datetime_v.strftime('%Y-%m-%d')
+                        
+                        database.add_instance(Hired_employees,name=str(name_v), datetime=str(datetime_v1), department_id=int(dept_id_), job_id=int(job_id_), id_hired=int(hired_id))    
                         cont_hired -=1            
                         print("count_hired->",cont_hired)                    
                     else:
+                        print("------",session['current_user'])
+
                         user_ = session['current_user']
                         DateTime_ = datetime.now()
                         DateTime_NOW =  DateTime_.isoformat(" ", "seconds")

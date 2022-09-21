@@ -1,0 +1,24 @@
+<table border="1">
+    <thead>
+        <tr>
+            <th>Department</th>
+            <th>Job</th>
+            <th>Q1</th>
+            <th>Q2</th>
+            <th>Q3</th>
+            <th>Q4</th>            
+        </tr>
+    </thead>
+    <tbody>
+        {% for quarter in quarters %}
+        <tr>
+            <td>{{ quarter.0 }}</td>
+            <td>{{ quarter.1 }}</td>
+            <td>{{ quarter.2 }}</td>
+            <td>{{ quarter.3 }}</td>
+            <td>{{ quarter.4 }}</td>
+            <td>{{ quarter.5 }}</td>            
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
