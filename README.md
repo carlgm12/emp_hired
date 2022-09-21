@@ -6,7 +6,7 @@ proyecto de prueba que usa base de mysql local y docker
 
 **Paso 2**: Clona el proyecto en tu maquina local usando el siguiente comando
 
-git clone 
+git clone https://github.com/carlgm12/emp_hired.git
 
 # Prerequisites
 
