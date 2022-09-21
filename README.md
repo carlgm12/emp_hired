@@ -34,19 +34,25 @@ https://www.apachefriends.org/download.html
 
 source_code/env/Scripts/activate.bat
 
-**Paso 2**: Activar la atravez de la consola de xampp:
+**Paso 2**: Activar el mysql atravez de la consola de comandos de xampp.
 
-**Paso 3**: Correr el siguiente comando en la carpeta raiz de tu proyecto usando la linea de comando
+**Paso 3**: migrar la base de datos atravez de los siguientes en la consola comando del proyecto comandos:
+
+Set FLASK_APP=index.py
+
+Flask db init
+flask db migrate
+Flask db upgrade
+
+**Paso 4**: Correr el siguiente comando en la carpeta raiz de tu proyecto usando la linea de comando
 
 docker-compose up --build
 
-**Paso 4**: Ejecutar el siguiente comando para poner el marcha en la carpeta raiz del mismo el proyecto:
+**Paso 5**: Ejecutar el siguiente comando para poner el marcha en la carpeta raiz del mismo el proyecto:
 
 /src/python index.py
 
 **Paso 5**: Habrir en el navegador la siguiente url
 
 http://localhost:5000/
-
-# Note:
 
