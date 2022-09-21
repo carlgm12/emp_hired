@@ -41,7 +41,7 @@ def sp_quarter():
     
     commit_changes()
     
-    return all_Q
+    return result_all
 
 def commit_changes():
     db.session.commit()

@@ -1,7 +1,7 @@
 import os
 import math
 from app import redis#, db
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, render_template
 #from redis import Redis
 from models.emp import Departments, Jobs, Hired_employees, Log_action
 from utils.funtions import session, jwt, datetime, timedelta, json, database, download_file_from_google_drive, pd, validate_load_hired, validate_date, validate_int, timezone
@@ -26,14 +26,14 @@ def login():
     
     token = jwt.encode(payload={**data, "exp":datetime.utcnow() + timedelta(seconds=30)}, key=getenv("SECRET"), algorithm="HS256")
     
-    if data['password'] == 1234:
+    if data['password'] == int(getenv("CLAVE")):
         return token.encode("UTF-8")        
     else:
         return json.dumps("user not found"), 404
 
-@service.route('/load_files')
+@service.route('/load_hired')
 #@token_required
-def load_files():
+def load_hired():
     #redis.incr('hits')
     #return 'This Compose/Flask demo has been viewed %s time(s).' % redis.get('hits')
     try:
@@ -67,8 +67,8 @@ def add_deparments():
 #@token_required
 def quarter_report():
     all_quarter = database.sp_quarter()    
-    
-    return json.dumps(all_quarter), 200
+    print(all_quarter)
+    return render_template('quarter_report.html', quarters = all_quarter)
 
 @service.route('/all_deparments', methods=['GET'])
 #@token_required
@@ -165,9 +165,9 @@ def load_jobs():
 
     return json.dumps("Jobs cargados"), 200
 
-@service.route('/load_hired/<row_count>', methods=['GET'])
+@service.route('/add_hired/<row_count>', methods=['GET'])
 #@token_required
-def load_hired(row_count):
+def add_hired(row_count):
     
     #val_count = int(row_count)
     val_count = int(row_count) - 1
