@@ -1,6 +1,6 @@
 # Flask-Docker-MySQL: 
 
-proyecto de prueba que usa base de mysql local y docker
+proyecto de prueba que usa base de mysql local y docker, esta desarrollado bajo ambiente windows os.
 
 # Empezando:
 
